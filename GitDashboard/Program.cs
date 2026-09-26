@@ -2,6 +2,7 @@ using GitDashboard.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSingleton<IGitRunner, GitRunner>();
 builder.Services.AddSingleton<GitService>();
 
 var app = builder.Build();

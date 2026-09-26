@@ -1,11 +1,10 @@
 using System.Diagnostics;
-using GitDashboard.Models;
 
 namespace GitDashboard.Services;
 
-public class GitService
+public class GitRunner : IGitRunner
 {
-    public async Task<List<Commit>> GetCommitsAsync(string repositoryPath)
+    public async Task<string> GetLogAsync(string repositoryPath)
     {
         var process = new Process
         {
@@ -32,19 +31,6 @@ public class GitService
             throw new Exception($"Git failed: {error}");
         }
 
-        return output
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(ParseCommit)
-            .ToList();
-    }
-
-    private static Commit ParseCommit(string line)
-    {
-        var parts = line.Split('|');
-        return new Commit(
-            Hash: parts[0],
-            Author: parts[1],
-            Date: DateOnly.Parse(parts[2])
-        );
+        return output;
     }
 }

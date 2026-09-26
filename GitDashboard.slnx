@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="GitDashboard/Gitdashboard.csproj" />
+  <Project Path="GitDashboard.Tests/GitDashboard.Tests.csproj" />
+</Solution>
