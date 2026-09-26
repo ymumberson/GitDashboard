@@ -49,4 +49,15 @@ public class GitServiceTests
             () => gitService.GetCommitsAsync("/fake/repository")
         );
     }
+
+    [Fact]
+    public async Task GetCommitsAsync_PassesRepositoryPathToGitRunner()
+    {
+        var gitRunner = new FakeGitRunner("");
+        var gitService = new GitService(gitRunner);
+
+        await gitService.GetCommitsAsync("/my/test/repository");
+
+        Assert.Equal("/my/test/repository", gitRunner.ReceivedRepositoryPath);
+    }
 }

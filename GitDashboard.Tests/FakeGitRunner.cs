@@ -5,6 +5,7 @@ namespace GitDashboard.Tests;
 public class FakeGitRunner : IGitRunner
 {
     private readonly string _output;
+    public string? ReceivedRepositoryPath {get; private set;}
 
     public FakeGitRunner(string output)
     {
@@ -13,6 +14,8 @@ public class FakeGitRunner : IGitRunner
 
     public Task<string> GetLogAsync(string repositoryPath)
     {
+        ReceivedRepositoryPath = repositoryPath;
+
         return Task.FromResult(_output);
     }
 }
