@@ -3,7 +3,9 @@ using GitDashboard.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IGitRunner, GitRunner>();
-builder.Services.AddSingleton<GitService>();
+builder.Services.AddSingleton<IGitService, GitService>();
+builder.Services.AddSingleton<IStatisticsService, StatisticsService>();
+builder.Services.AddSingleton<RepositoryAnalysisService>();
 
 var app = builder.Build();
 
@@ -18,11 +20,11 @@ app.MapGet("/api/hello", () =>
    };
 });
 
-app.MapGet("api/analyse", async (string path, GitService gitService) =>
+app.MapGet("api/analyse", async (
+   string path,
+   RepositoryAnalysisService repositoryAnalysisService) =>
 {
-   var commits = await gitService.GetCommitsAsync(path);
-
-   return commits;
+   return await repositoryAnalysisService.AnalyseAsync(path);
 });
 
 app.Run();

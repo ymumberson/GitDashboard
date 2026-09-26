@@ -2,7 +2,7 @@ using GitDashboard.Models;
 
 namespace GitDashboard.Services;
 
-public class StatisticsService
+public class StatisticsService : IStatisticsService
 {
     public RepositoryStats Calculate(List<Commit> commits)
     {    

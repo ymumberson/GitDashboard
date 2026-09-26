@@ -3,7 +3,7 @@ using GitDashboard.Models;
 
 namespace GitDashboard.Services;
 
-public class GitService
+public class GitService : IGitService
 {
     private readonly IGitRunner _gitRunner;
 
