@@ -1,18 +1,24 @@
 using System.Diagnostics;
 using GitDashboard.Exceptions;
+using GitDashboard.Models;
 
 namespace GitDashboard.Services;
 
 public class GitRunner : IGitRunner
 {
-    public async Task<string> GetLogAsync(string repositoryPath)
+    public async Task<GitCommandResult> RunAsync(string repositoryPath, string arguments)
     {
+        if (!Directory.Exists(repositoryPath))
+        {
+            throw new InvalidRepositoryException($"Repository does not exist: {repositoryPath}");
+        }
+        
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
                 FileName = "git",
-                Arguments = "log --pretty=format:\"%H|%an|%ad\" --date=short",
+                Arguments = arguments,
                 WorkingDirectory = repositoryPath,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -27,11 +33,10 @@ public class GitRunner : IGitRunner
 
         await process.WaitForExitAsync();
 
-        if (process.ExitCode != 0)
-        {
-            throw new InvalidRepositoryException($"Unable to read repository: {error}");
-        }
-
-        return output;
+        return new GitCommandResult(
+            Output: output,
+            Error: error,
+            ExitCode: process.ExitCode
+        );
     }
 }

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using GitDashboard.Exceptions;
 using GitDashboard.Models;
 
 namespace GitDashboard.Services;
@@ -14,9 +15,14 @@ public class GitService : IGitService
 
     public async Task<List<Commit>> GetCommitsAsync(string repositoryPath)
     {
-        var output = await _gitRunner.GetLogAsync(repositoryPath);
+        var result = await _gitRunner.RunAsync(repositoryPath, "log --pretty=format:\"%H|%an|%ad\" --date=short");
 
-        return output
+        if (result.ExitCode != 0)
+        {
+            throw new InvalidRepositoryException($"Invalid repository");
+        }
+
+        return result.Output
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
             .Select(ParseCommit)
             .ToList();

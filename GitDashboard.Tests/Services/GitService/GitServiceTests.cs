@@ -1,4 +1,6 @@
 ﻿using GitDashboard.Services;
+using GitDashboard.Models;
+using GitDashboard.Exceptions;
 
 namespace GitDashboard.Tests;
 
@@ -8,8 +10,11 @@ public class GitServiceTests
     public async Task GetCommitsAsync_ParseGitLog()
     {
         var gitRunner = new FakeGitRunner(
-            "abc123|Alice|2026-09-25\n" +
-            "def456|Bob|2026-09-24"
+            new GitCommandResult (
+                "abc123|Alice|2026-09-25\ndef456|Bob|2026-09-24",
+                "",
+                0
+            )
         );
 
         var gitService = new GitService(gitRunner);
@@ -29,7 +34,13 @@ public class GitServiceTests
     [Fact]
     public async Task GetCommitsAsync_WithNoCommits_ReturnsEmptyList()
     {
-        var gitRunner = new FakeGitRunner("");
+        var gitRunner = new FakeGitRunner(
+            new GitCommandResult (
+                "",
+                "",
+                0
+            )
+        );
 
         var gitService = new GitService(gitRunner);
 
@@ -41,7 +52,13 @@ public class GitServiceTests
     [Fact]
     public async Task GetCommitsAsync_WithMalformedGitOutput_ThrowsFormatException()
     {
-        var gitRunner = new FakeGitRunner("abc123|Alice");
+        var gitRunner = new FakeGitRunner(
+            new GitCommandResult (
+                "abc123|Alice",
+                "",
+                0
+            )
+        );
 
         var gitService = new GitService(gitRunner);
 
@@ -53,11 +70,50 @@ public class GitServiceTests
     [Fact]
     public async Task GetCommitsAsync_PassesRepositoryPathToGitRunner()
     {
-        var gitRunner = new FakeGitRunner("");
+        var gitRunner = new FakeGitRunner(
+            new GitCommandResult (
+                "",
+                "",
+                0
+            )
+        );
         var gitService = new GitService(gitRunner);
 
         await gitService.GetCommitsAsync("/my/test/repository");
 
         Assert.Equal("/my/test/repository", gitRunner.ReceivedRepositoryPath);
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_PassesArgumentsPathToGitRunner()
+    {
+        var gitRunner = new FakeGitRunner(
+            new GitCommandResult("", "", 0)
+        );
+
+        var gitService = new GitService(gitRunner);
+
+        await gitService.GetCommitsAsync("/path/to/repository");
+
+        Assert.Equal("log --pretty=format:\"%H|%an|%ad\" --date=short", gitRunner.RecievedArguments);
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_WithInvalidRepository_ThrowsInvalidRepositoryException()
+    {
+        // Arrange
+        var gitRunner = new FakeGitRunner(
+            new GitCommandResult(
+                "",
+                "fatal: not a git repository",
+                128
+            )
+        );
+        var service = new GitService(gitRunner);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidRepositoryException>(
+            () => service.GetCommitsAsync("C:\\this\\does\\not\\exist")
+        );
     }
 }

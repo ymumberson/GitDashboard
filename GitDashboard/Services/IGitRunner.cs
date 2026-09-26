@@ -1,6 +1,8 @@
+using GitDashboard.Models;
+
 namespace GitDashboard.Services;
 
 public interface IGitRunner
 {
-    Task<string> GetLogAsync(string repositoryPath);
+    Task<GitCommandResult> RunAsync(string repositoryPath, string arguments);
 }

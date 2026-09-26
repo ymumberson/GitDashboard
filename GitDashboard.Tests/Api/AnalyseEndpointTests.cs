@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using GitDashboard.Models;
 using GitDashboard.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -78,5 +79,11 @@ public class AnalyseEndpointTests
         var response = await client.GetAsync("/api/analyse?path=/invalid/repository");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(400, problem.Status);
+        Assert.Equal("Invalid repository", problem.Title);
     }
 }

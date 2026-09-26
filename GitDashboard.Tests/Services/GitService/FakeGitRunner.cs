@@ -1,21 +1,24 @@
+using GitDashboard.Models;
 using GitDashboard.Services;
 
 namespace GitDashboard.Tests;
 
 public class FakeGitRunner : IGitRunner
 {
-    private readonly string _output;
+    private readonly GitCommandResult _commandResult;
     public string? ReceivedRepositoryPath {get; private set;}
+    public string? RecievedArguments {get; private set;}
 
-    public FakeGitRunner(string output)
+    public FakeGitRunner(GitCommandResult commandResult)
     {
-        _output = output;
+        _commandResult = commandResult;
     }
 
-    public Task<string> GetLogAsync(string repositoryPath)
+    public Task<GitCommandResult> RunAsync(string repositoryPath, string arguments)
     {
         ReceivedRepositoryPath = repositoryPath;
+        RecievedArguments = arguments;
 
-        return Task.FromResult(_output);
+        return Task.FromResult(_commandResult);
     }
 }
