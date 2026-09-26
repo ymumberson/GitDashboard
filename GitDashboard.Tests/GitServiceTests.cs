@@ -5,9 +5,8 @@ namespace GitDashboard.Tests;
 public class GitServiceTests
 {
     [Fact]
-    public async Task GetCommitAsync_ParseGitLog()
+    public async Task GetCommitsAsync_ParseGitLog()
     {
-        // Arrange
         var gitRunner = new FakeGitRunner(
             "abc123|Alice|2026-09-25\n" +
             "def456|Bob|2026-09-24"
@@ -24,6 +23,30 @@ public class GitServiceTests
         Assert.Equal(
             new DateOnly(2026, 9, 25),
             commits[0].Date
+        );
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_WithNoCommits_ReturnsEmptyList()
+    {
+        var gitRunner = new FakeGitRunner("");
+
+        var gitService = new GitService(gitRunner);
+
+        var commits = await gitService.GetCommitsAsync("/fake/repository");
+
+        Assert.Empty(commits);
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_WithMalformedGitOutput_ThrowsFormatException()
+    {
+        var gitRunner = new FakeGitRunner("abc123|Alice");
+
+        var gitService = new GitService(gitRunner);
+
+        await Assert.ThrowsAsync<FormatException>(
+            () => gitService.GetCommitsAsync("/fake/repository")
         );
     }
 }

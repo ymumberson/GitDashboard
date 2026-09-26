@@ -25,6 +25,12 @@ public class GitService
     private static Commit ParseCommit(string line)
     {
         var parts = line.Split('|');
+
+        if (parts.Length != 3)
+        {
+            throw new FormatException($"Invalid Git commit format: {line}");
+        }
+
         return new Commit(
             Hash: parts[0],
             Author: parts[1],
