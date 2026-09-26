@@ -85,7 +85,7 @@ public class GitServiceTests
     }
 
     [Fact]
-    public async Task GetCommitsAsync_PassesArgumentsPathToGitRunner()
+    public async Task GetCommitsAsync_PassesArgumentsToGitRunner()
     {
         var gitRunner = new FakeGitRunner(
             new GitCommandResult("", "", 0)
