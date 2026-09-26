@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using GitDashboard.Exceptions;
 
 namespace GitDashboard.Services;
 
@@ -28,7 +29,7 @@ public class GitRunner : IGitRunner
 
         if (process.ExitCode != 0)
         {
-            throw new Exception($"Git failed: {error}");
+            throw new InvalidRepositoryException($"Unable to read repository: {error}");
         }
 
         return output;

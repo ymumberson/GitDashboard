@@ -1,3 +1,4 @@
+using GitDashboard.Exceptions;
 using GitDashboard.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +25,14 @@ app.MapGet("api/analyse", async (
    string path,
    RepositoryAnalysisService repositoryAnalysisService) =>
 {
-   return await repositoryAnalysisService.AnalyseAsync(path);
+   try
+   {
+      return Results.Ok(await repositoryAnalysisService.AnalyseAsync(path));
+   } 
+   catch (InvalidRepositoryException e)
+   {
+      return Results.BadRequest(new {error = e.Message});
+   }
 });
 
 app.Run();

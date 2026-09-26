@@ -1,7 +1,9 @@
+using System.Net;
 using System.Net.Http.Json;
 using GitDashboard.Models;
 using GitDashboard.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -53,5 +55,28 @@ public class AnalyseEndpointTests
         Assert.Equal(2, result.TotalCommits);
         Assert.Equal(1, result.CommitsByAuthor["Alice"]);
         Assert.Equal(1, result.CommitsByAuthor["Bob"]);
+    }
+
+    [Fact]
+    public async Task Analyse_WithInvalidRepository_ReturnsBadRequest()
+    {
+        await using var factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    services.RemoveAll<IGitService>();
+
+                    services.AddSingleton<IGitService>(
+                        new FakeGitServiceThatThrows()
+                    );
+                });
+            });
+
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/analyse?path=/invalid/repository");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }
