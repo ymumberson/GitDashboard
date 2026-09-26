@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitDash</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main>
+        <h1>GitDash</h1>
+        <p>Analyse a Git repository.</p>
+
+        <form id="repo-form">
+            <label for="repo-path">Repository path</label>
+            <input
+                id="repo-path"
+                type="text"
+                placeholder="/path/to/repository"
+                required
+            >
+
+            <button type="submit">Analyse</button>
+        </form>
+
+        <div id="result"></div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
