@@ -58,4 +58,16 @@ public class StatisticsServiceTests
         Assert.Equal(2, result.CommitsByDate[new DateOnly(2026, 9, 21)]);
         Assert.Equal(1, result.CommitsByDate[new DateOnly(2026, 9, 22)]);
     }
+
+    [Fact]
+    public void Calculate_WithNoCommits_ReturnsEmptyStatistics()
+    {
+        var service = new StatisticsService();
+
+        var result = service.Calculate([]);
+
+        Assert.Equal(0, result.TotalCommits);
+        Assert.Empty(result.CommitsByAuthor);
+        Assert.Empty(result.CommitsByDate);
+    }
 }
