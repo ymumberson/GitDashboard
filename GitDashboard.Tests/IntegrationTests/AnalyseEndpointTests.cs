@@ -86,4 +86,27 @@ public class AnalyseEndpointTests
         Assert.Equal(400, problem.Status);
         Assert.Equal("Invalid repository", problem.Title);
     }
+
+    [Fact]
+    public async Task Analyse_WithoutPath_ReturnsBadRequest()
+    {
+        await using var factory = new WebApplicationFactory<Program>();
+
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/analyse");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Analyse_WithEmptyPath_ReturnsBadRequest() {
+        await using var factory = new WebApplicationFactory<Program>();
+
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/analyse?path=");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

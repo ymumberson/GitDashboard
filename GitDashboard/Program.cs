@@ -1,5 +1,6 @@
 using GitDashboard.Exceptions;
 using GitDashboard.Services;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,10 +27,20 @@ app.MapGet("/api/hello", () =>
 });
 
 app.MapGet("api/analyse", async (
-   string path,
+   string? path,
    RepositoryAnalysisService service) =>
 {
-   return await service.AnalyseAsync(path);
+   if (string.IsNullOrWhiteSpace(path))
+   {
+      return Results.BadRequest(new ProblemDetails
+      {
+         Status = StatusCodes.Status400BadRequest,
+         Title = "Invalid request",
+         Detail = "The repository path is required"
+      });
+   }
+   
+   return Results.Ok(await service.AnalyseAsync(path));
 });
 
 app.Run();
