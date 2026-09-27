@@ -12,7 +12,7 @@ public class FakeGitService : IGitService
         _commits = commits;
     }
 
-    public Task<List<Commit>> GetCommitsAsync(string repositoryPath)
+    public Task<List<Commit>> GetCommitsAsync(string repositoryPath, CancellationToken cancellationToken)
     {
         return Task.FromResult(_commits);
     }

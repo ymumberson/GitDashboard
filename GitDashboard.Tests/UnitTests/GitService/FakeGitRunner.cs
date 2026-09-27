@@ -8,16 +8,18 @@ public class FakeGitRunner : IGitRunner
     private readonly GitCommandResult _commandResult;
     public string? ReceivedRepositoryPath {get; private set;}
     public string? RecievedArguments {get; private set;}
+    public CancellationToken ReceivedCancellationToken {get; private set;}
 
     public FakeGitRunner(GitCommandResult commandResult)
     {
         _commandResult = commandResult;
     }
 
-    public Task<GitCommandResult> RunAsync(string repositoryPath, string arguments)
+    public Task<GitCommandResult> RunAsync(string repositoryPath, string arguments, CancellationToken cancellationToken)
     {
         ReceivedRepositoryPath = repositoryPath;
         RecievedArguments = arguments;
+        ReceivedCancellationToken = cancellationToken;
 
         return Task.FromResult(_commandResult);
     }

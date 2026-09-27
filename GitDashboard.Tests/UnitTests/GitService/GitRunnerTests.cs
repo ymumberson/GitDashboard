@@ -15,7 +15,7 @@ public class GitRunnerTests
             )
         );
 
-        var result = await gitRunner.RunAsync("/Invalid/Directory", "");
+        var result = await gitRunner.RunAsync("/Invalid/Directory", "", new CancellationToken());
 
         Assert.NotEqual(0, result.ExitCode);
     }

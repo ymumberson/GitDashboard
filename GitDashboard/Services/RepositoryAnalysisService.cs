@@ -15,9 +15,9 @@ public class RepositoryAnalysisService
         _statisticsService = statisticsService;
     }
 
-    public async Task<RepositoryStats> AnalyseAsync(string repositoryPath)
+    public async Task<RepositoryStats> AnalyseAsync(string repositoryPath, CancellationToken cancellationToken)
     {
-        var commits = await _gitService.GetCommitsAsync(repositoryPath);
+        var commits = await _gitService.GetCommitsAsync(repositoryPath, cancellationToken);
 
         return _statisticsService.Calculate(commits);
     }

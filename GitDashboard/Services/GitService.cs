@@ -13,9 +13,9 @@ public class GitService : IGitService
         _gitRunner = gitRunner;
     }
 
-    public async Task<List<Commit>> GetCommitsAsync(string repositoryPath)
+    public async Task<List<Commit>> GetCommitsAsync(string repositoryPath, CancellationToken cancellationToken)
     {
-        var result = await _gitRunner.RunAsync(repositoryPath, "log --pretty=format:\"%H|%an|%ad\" --date=short");
+        var result = await _gitRunner.RunAsync(repositoryPath, "log --pretty=format:\"%H|%an|%ad\" --date=short", cancellationToken);
 
         if (result.ExitCode != 0)
         {

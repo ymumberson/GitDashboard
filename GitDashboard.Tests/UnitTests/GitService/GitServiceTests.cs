@@ -19,7 +19,7 @@ public class GitServiceTests
 
         var gitService = new GitService(gitRunner);
 
-        var commits = await gitService.GetCommitsAsync("/fake/repository");
+        var commits = await gitService.GetCommitsAsync("/fake/repository", new CancellationToken());
 
         Assert.Equal(2, commits.Count);
 
@@ -44,7 +44,7 @@ public class GitServiceTests
 
         var gitService = new GitService(gitRunner);
 
-        var commits = await gitService.GetCommitsAsync("/fake/repository");
+        var commits = await gitService.GetCommitsAsync("/fake/repository", new CancellationToken());
 
         Assert.Empty(commits);
     }
@@ -63,7 +63,7 @@ public class GitServiceTests
         var gitService = new GitService(gitRunner);
 
         await Assert.ThrowsAsync<FormatException>(
-            () => gitService.GetCommitsAsync("/fake/repository")
+            () => gitService.GetCommitsAsync("/fake/repository", new CancellationToken())
         );
     }
 
@@ -79,7 +79,7 @@ public class GitServiceTests
         );
         var gitService = new GitService(gitRunner);
 
-        await gitService.GetCommitsAsync("/my/test/repository");
+        await gitService.GetCommitsAsync("/my/test/repository", new CancellationToken());
 
         Assert.Equal("/my/test/repository", gitRunner.ReceivedRepositoryPath);
     }
@@ -93,7 +93,7 @@ public class GitServiceTests
 
         var gitService = new GitService(gitRunner);
 
-        await gitService.GetCommitsAsync("/path/to/repository");
+        await gitService.GetCommitsAsync("/path/to/repository", new CancellationToken());
 
         Assert.Equal("log --pretty=format:\"%H|%an|%ad\" --date=short", gitRunner.RecievedArguments);
     }
@@ -113,7 +113,24 @@ public class GitServiceTests
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidRepositoryException>(
-            () => service.GetCommitsAsync("C:\\this\\does\\not\\exist")
+            () => service.GetCommitsAsync("C:\\this\\does\\not\\exist", new CancellationToken())
         );
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_PassesCancellationTokenToGitRunner()
+    {
+        var gitRunner = new FakeGitRunner(new GitCommandResult("", "", 0));
+
+        var gitService = new GitService(gitRunner);
+
+        using var cancellationTokenSource = new CancellationTokenSource();
+
+        await gitService.GetCommitsAsync(
+            "/path/to/repository",
+            cancellationTokenSource.Token
+        );
+
+        Assert.Equal(cancellationTokenSource.Token, gitRunner.ReceivedCancellationToken);
     }
 }

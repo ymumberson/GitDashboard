@@ -34,7 +34,8 @@ public class GitRunnerIntegrationTests
 
             var result = await gitRunner.RunAsync(
                 repositoryPath,
-                "log --pretty=format:\"%H|%an|%ad\" --date=short"
+                "log --pretty=format:\"%H|%an|%ad\" --date=short",
+                new CancellationToken()
             );
 
             Assert.Equal(0, result.ExitCode);

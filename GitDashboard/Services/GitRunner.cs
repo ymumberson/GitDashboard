@@ -6,7 +6,7 @@ namespace GitDashboard.Services;
 
 public class GitRunner : IGitRunner
 {
-    public async Task<GitCommandResult> RunAsync(string repositoryPath, string arguments)
+    public async Task<GitCommandResult> RunAsync(string repositoryPath, string arguments, CancellationToken cancellationToken)
     {
         if (!Directory.Exists(repositoryPath))
         {
@@ -31,7 +31,7 @@ public class GitRunner : IGitRunner
         var output = await process.StandardOutput.ReadToEndAsync();
         var error = await process.StandardError.ReadToEndAsync();
 
-        await process.WaitForExitAsync();
+        await process.WaitForExitAsync(cancellationToken);
 
         return new GitCommandResult(
             Output: output,

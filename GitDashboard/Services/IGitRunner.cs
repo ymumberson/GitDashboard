@@ -4,5 +4,5 @@ namespace GitDashboard.Services;
 
 public interface IGitRunner
 {
-    Task<GitCommandResult> RunAsync(string repositoryPath, string arguments);
+    Task<GitCommandResult> RunAsync(string repositoryPath, string arguments, CancellationToken cancellationToken);
 }

@@ -27,7 +27,8 @@ app.MapGet("/api/hello", () =>
 
 app.MapGet("api/analyse", async (
    string? path,
-   RepositoryAnalysisService service) =>
+   RepositoryAnalysisService service,
+   CancellationToken cancellationToken) =>
 {
    if (string.IsNullOrWhiteSpace(path))
    {
@@ -38,7 +39,7 @@ app.MapGet("api/analyse", async (
       );
    }
    
-   return Results.Ok(await service.AnalyseAsync(path));
+   return Results.Ok(await service.AnalyseAsync(path, cancellationToken));
 });
 
 app.Run();
