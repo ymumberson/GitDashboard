@@ -1,4 +1,6 @@
 using GitDashboard.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace GitDashboard.Tests;
 
@@ -30,7 +32,8 @@ public class GitRunnerIntegrationTests
                 "commit -m \"Initial commit\" --author=\"Alice <alice@example.com>\""
             );
 
-            var gitRunner = new GitRunner();
+            var logger = NullLogger<GitRunner>.Instance;
+            var gitRunner = new GitRunner(logger);
 
             var result = await gitRunner.RunAsync(
                 repositoryPath,
