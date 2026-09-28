@@ -4,7 +4,11 @@ using GitDashboard.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<GitOptions>(builder.Configuration.GetSection("Git"));
+builder.Services
+   .AddOptions<GitOptions>()
+   .Bind(builder.Configuration.GetSection("Git"))
+   .ValidateDataAnnotations()
+   .ValidateOnStart();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<InvalidRepositoryResponseHandler>();
