@@ -1,6 +1,8 @@
 ﻿using GitDashboard.Services;
 using GitDashboard.Models;
 using GitDashboard.Exceptions;
+using GitDashboard.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace GitDashboard.Tests;
 
@@ -17,7 +19,7 @@ public class GitServiceTests
             )
         );
 
-        var gitService = new GitService(gitRunner);
+        var gitService = new GitService(gitRunner, Options.Create(new GitOptions()));
 
         var commits = await gitService.GetCommitsAsync("/fake/repository", new CancellationToken());
 
@@ -42,7 +44,7 @@ public class GitServiceTests
             )
         );
 
-        var gitService = new GitService(gitRunner);
+        var gitService = new GitService(gitRunner, Options.Create(new GitOptions()));
 
         var commits = await gitService.GetCommitsAsync("/fake/repository", new CancellationToken());
 
@@ -60,7 +62,7 @@ public class GitServiceTests
             )
         );
 
-        var gitService = new GitService(gitRunner);
+        var gitService = new GitService(gitRunner, Options.Create(new GitOptions()));
 
         await Assert.ThrowsAsync<FormatException>(
             () => gitService.GetCommitsAsync("/fake/repository", new CancellationToken())
@@ -77,7 +79,7 @@ public class GitServiceTests
                 0
             )
         );
-        var gitService = new GitService(gitRunner);
+        var gitService = new GitService(gitRunner, Options.Create(new GitOptions()));
 
         await gitService.GetCommitsAsync("/my/test/repository", new CancellationToken());
 
@@ -85,17 +87,21 @@ public class GitServiceTests
     }
 
     [Fact]
-    public async Task GetCommitsAsync_PassesArgumentsToGitRunner()
+    public async Task GetCommitsAsync_UsesConfiguredGitArguments()
     {
         var gitRunner = new FakeGitRunner(
             new GitCommandResult("", "", 0)
         );
 
-        var gitService = new GitService(gitRunner);
+        var options = Options.Create(
+            new GitOptions{ LogArguments = "Configured log arguments"}
+        );
+
+        var gitService = new GitService(gitRunner, options);
 
         await gitService.GetCommitsAsync("/path/to/repository", new CancellationToken());
 
-        Assert.Equal("log --pretty=format:\"%H|%an|%ad\" --date=short", gitRunner.RecievedArguments);
+        Assert.Equal("Configured log arguments", gitRunner.RecievedArguments);
     }
 
     [Fact]
@@ -109,7 +115,7 @@ public class GitServiceTests
                 128
             )
         );
-        var service = new GitService(gitRunner);
+        var service = new GitService(gitRunner, Options.Create(new GitOptions()));
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidRepositoryException>(
@@ -122,7 +128,7 @@ public class GitServiceTests
     {
         var gitRunner = new FakeGitRunner(new GitCommandResult("", "", 0));
 
-        var gitService = new GitService(gitRunner);
+        var gitService = new GitService(gitRunner, Options.Create(new GitOptions()));
 
         using var cancellationTokenSource = new CancellationTokenSource();
 

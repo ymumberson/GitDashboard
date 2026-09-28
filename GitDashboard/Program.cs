@@ -1,7 +1,10 @@
 using GitDashboard.Exceptions;
 using GitDashboard.Services;
+using GitDashboard.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<GitOptions>(builder.Configuration.GetSection("Git"));
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<InvalidRepositoryResponseHandler>();
