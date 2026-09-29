@@ -28,10 +28,10 @@ public class RepositoryAnalysisTests
             }
         );
 
-        var gitService = new FakeGitService(commits);
+        var repositorySource = new FakeRepositorySource(commits);
         var statisticsService = new FakeStatisticsService(expectedStats);
 
-        var service = new RepositoryAnalysisService(gitService, statisticsService);
+        var service = new RepositoryAnalysisService(repositorySource, statisticsService);
 
         var result = await service.AnalyseAsync("/test/repository", new CancellationToken());
 

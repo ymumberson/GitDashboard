@@ -4,20 +4,20 @@ namespace GitDashboard.Services;
 
 public class RepositoryAnalysisService
 {
-    private readonly IGitService _gitService;
+    private readonly IRepositorySource _repositorySource;
     private readonly IStatisticsService _statisticsService;
 
     public RepositoryAnalysisService(
-        IGitService gitService,
+        IRepositorySource repositorySource,
         IStatisticsService statisticsService)
     {
-        _gitService = gitService;
+        _repositorySource = repositorySource;
         _statisticsService = statisticsService;
     }
 
     public async Task<RepositoryStats> AnalyseAsync(string repositoryPath, CancellationToken cancellationToken)
     {
-        var commits = await _gitService.GetCommitsAsync(repositoryPath, cancellationToken);
+        var commits = await _repositorySource.GetCommitsAsync(repositoryPath, cancellationToken);
 
         return _statisticsService.Calculate(commits);
     }

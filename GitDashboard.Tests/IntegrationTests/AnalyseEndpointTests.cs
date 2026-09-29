@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using GitDashboard.Exceptions;
 using GitDashboard.Models;
 using GitDashboard.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -20,10 +21,10 @@ public class AnalyseEndpointTests
             {
                 builder.ConfigureServices(services =>
                 {
-                    services.RemoveAll<IGitService>();
+                    services.RemoveAll<IRepositorySource>();
 
-                    services.AddSingleton<IGitService>(
-                        new FakeGitService(
+                    services.AddSingleton<IRepositorySource>(
+                        new FakeRepositorySource(
                             new List<Commit>
                             {
                                 new(
@@ -66,10 +67,14 @@ public class AnalyseEndpointTests
             {
                 builder.ConfigureServices(services =>
                 {
-                    services.RemoveAll<IGitService>();
+                    services.RemoveAll<IRepositorySource>();
 
-                    services.AddSingleton<IGitService>(
-                        new FakeGitServiceThatThrows()
+                    services.AddSingleton<IRepositorySource>(
+                        new FakeRepositorySource(
+                            new InvalidRepositoryException(
+                                "The repository could not be accessed."
+                            )
+                        )
                     );
                 });
             });

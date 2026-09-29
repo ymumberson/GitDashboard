@@ -15,6 +15,7 @@ builder.Services.AddExceptionHandler<InvalidRepositoryResponseHandler>();
 
 builder.Services.AddSingleton<IGitRunner, GitRunner>();
 builder.Services.AddSingleton<IGitService, GitService>();
+builder.Services.AddSingleton<IRepositorySource, LocalRepositorySource>();
 builder.Services.AddSingleton<IStatisticsService, StatisticsService>();
 builder.Services.AddSingleton<RepositoryAnalysisService>();
 
