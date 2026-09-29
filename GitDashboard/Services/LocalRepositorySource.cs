@@ -1,5 +1,5 @@
 using GitDashboard.Models;
-using GitDashboard.Services;
+namespace GitDashboard.Services;
 
 public class LocalRepositorySource : IRepositorySource
 {

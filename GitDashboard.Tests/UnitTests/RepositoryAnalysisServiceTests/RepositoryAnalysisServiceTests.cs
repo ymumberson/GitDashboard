@@ -33,7 +33,7 @@ public class RepositoryAnalysisTests
 
         var service = new RepositoryAnalysisService(repositorySource, statisticsService);
 
-        var result = await service.AnalyseAsync("/test/repository", new CancellationToken());
+        var result = await service.AnalyseAsync("/test/repository", CancellationToken.None);
 
         Assert.Same(expectedStats, result);
     }
