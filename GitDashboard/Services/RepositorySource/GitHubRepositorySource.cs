@@ -37,7 +37,17 @@ public class GitHubRepositorySource : IRepositorySource
             throw new InvalidRepositoryException($"The GitHub repository could not be found.");
         }
 
-        response.EnsureSuccessStatusCode();
+        // response.EnsureSuccessStatusCode();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(
+                cancellationToken);
+
+            throw new HttpRequestException(
+                $"GitHub API returned {(int)response.StatusCode} " +
+                $"({response.StatusCode}): {error}");
+        }
 
         var commits = await response.Content.ReadFromJsonAsync<List<GitHubCommitResponse>>(cancellationToken);
 

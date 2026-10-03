@@ -116,4 +116,41 @@ public class AnalyseEndpointTests
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Analyse_WithGitHubRepository_ReturnsRepositoryStatistics()
+    {
+        // Arrange
+        var commits = new List<Commit>
+        {
+            new("abc123", "Alice", new DateOnly(2026, 1, 1)),
+            new("def456", "Bob", new DateOnly(2026, 1, 2))
+        };
+
+        var source = new FakeRepositorySource(
+            typeof(GitHubRepositoryReference),
+            commits
+        );
+
+        await using var factory = new WebApplicationFactory<Program>();
+        var client = factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.RemoveAll<IRepositorySource>();
+                services.AddSingleton<IRepositorySource>(source);
+            });
+        }).CreateClient();
+
+        // Act
+        var response = await client.GetAsync("/api/analyse?owner=username&name=repository");
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<RepositoryStats>();
+
+        Assert.NotNull(result);
+        Assert.Equal(2, result.TotalCommits);
+    }
 }
