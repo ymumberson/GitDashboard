@@ -14,6 +14,7 @@ builder.Services
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<InvalidRepositoryResponseHandler>();
+builder.Services.AddExceptionHandler<GitHubApiResponseHandler>();
 
 builder.Services.AddSingleton<IGitRunner, GitRunner>();
 builder.Services.AddSingleton<IGitService, GitService>();

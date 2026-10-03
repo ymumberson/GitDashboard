@@ -153,4 +153,35 @@ public class AnalyseEndpointTests
         Assert.NotNull(result);
         Assert.Equal(2, result.TotalCommits);
     }
+
+    [Fact]
+    public async Task Analyse_WithGitHubApiFailure_ReturnsBadGateway()
+    {
+        // Arrange
+        await using var factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    services.RemoveAll<IRepositorySource>();
+
+                    services.AddSingleton<IRepositorySource>(
+                        new FakeRepositorySource(
+                            typeof(GitHubRepositoryReference),
+                            new GitHubApiException(
+                                "GitHub API request failed."
+                            )
+                        )
+                    );
+                });
+            });
+
+        using var client = factory.CreateClient();
+
+        // Act
+        var response = await client.GetAsync("/api/analyse?owner=username&name=repository");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+    }
 }

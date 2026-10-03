@@ -164,4 +164,27 @@ public class GitHubRepositorySourceTests
             () => task
         );
     }
+
+    [Fact]
+    public async Task GetCommitsAsync_WhenGitHubReturnsForbidden_ThrowsHttpRequestException()
+    {
+        // Arrange
+        var response = new HttpResponseMessage(HttpStatusCode.Forbidden);
+
+        var handler = new FakeHttpMessageHandler(response);
+
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://api.github.com")
+        };
+
+        var source = new GitHubRepositorySource(httpClient);
+
+        var repository = new GitHubRepositoryReference("username", "repository");
+
+        // Act & Assert
+        await Assert.ThrowsAsync<HttpRequestException>(
+            () => source.GetCommitsAsync(repository, CancellationToken.None)
+        );
+    }
 }
