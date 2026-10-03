@@ -1,3 +1,5 @@
+using System.Net;
+using GitDashboard.Exceptions;
 using GitDashboard.Models;
 
 namespace GitDashboard.Services;
@@ -25,12 +27,21 @@ public class GitHubRepositorySource : IRepositorySource
                 nameof(repository));
         }
 
-        var response = await _httpClient.GetFromJsonAsync<List<GitHubCommitResponse>>(
+        var response = await _httpClient.GetAsync(
             $"/repos/{gitHubRepositoryReference.Owner}/{gitHubRepositoryReference.Name}/commits",
             cancellationToken
         );
 
-        return response?
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            throw new InvalidRepositoryException($"The GitHub repository could not be found.");
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        var commits = await response.Content.ReadFromJsonAsync<List<GitHubCommitResponse>>(cancellationToken);
+
+        return commits?
             .Select(commit => new Commit(commit.Sha, commit.Commit.Author.Name, DateOnly.FromDateTime(commit.Commit.Author.Date)))
             .ToList()
             ?? [];

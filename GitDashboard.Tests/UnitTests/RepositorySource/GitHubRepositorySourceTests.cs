@@ -1,4 +1,5 @@
 using System.Net;
+using GitDashboard.Exceptions;
 using GitDashboard.Models;
 using GitDashboard.Services;
 
@@ -69,5 +70,60 @@ public class GitHubRepositorySourceTests
         Assert.Equal(
             new DateOnly(2026, 9, 24),
             commits[1].Date);
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_RequestsCorrectRepository()
+    {
+        // Arrange
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                "[]",
+                System.Text.Encoding.UTF8,
+                "application/json"
+            )
+        };
+
+        var handler = new FakeHttpMessageHandler(response);
+
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://api.github.com")
+        };
+
+        var source = new GitHubRepositorySource(httpClient);
+
+        var repository = new GitHubRepositoryReference("username", "repository");
+
+        // Act
+        await source.GetCommitsAsync(repository, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(handler.ReceivedRequest);
+
+        Assert.Equal("/repos/username/repository/commits", handler.ReceivedRequest!.RequestUri!.PathAndQuery);
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_WithMissingRepository_ReturnsInvalidRepositoryException()
+    {
+        // Arrange
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound);
+
+        var handler = new FakeHttpMessageHandler(response);
+
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://api.github.com")
+        };
+
+        var source = new GitHubRepositorySource(httpClient);
+
+        var repository = new GitHubRepositoryReference("username", "repository");
+
+        await Assert.ThrowsAsync<InvalidRepositoryException>(
+            () => source.GetCommitsAsync(repository, CancellationToken.None)
+        );
     }
 }
