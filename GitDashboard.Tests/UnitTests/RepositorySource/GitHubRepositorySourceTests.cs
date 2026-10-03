@@ -122,8 +122,46 @@ public class GitHubRepositorySourceTests
 
         var repository = new GitHubRepositoryReference("username", "repository");
 
+        // Act & assert
         await Assert.ThrowsAsync<InvalidRepositoryException>(
             () => source.GetCommitsAsync(repository, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_PassesCancellationTokenToHttpClient()
+    {
+        // Arrange
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                "[]",
+                System.Text.Encoding.UTF8,
+                "application/json"
+            )
+        };
+
+        var handler = new FakeHttpMessageHandler(response, true);
+
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://api.github.com")
+        };
+
+        var source = new GitHubRepositorySource(httpClient);
+
+        var repository = new GitHubRepositoryReference("username", "repository");
+
+        using var cancellationTokenSource = new CancellationTokenSource();
+
+        // Act
+        var task = source.GetCommitsAsync(repository, cancellationTokenSource.Token);
+
+        cancellationTokenSource.Cancel();
+
+        // Assert
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => task
         );
     }
 }
