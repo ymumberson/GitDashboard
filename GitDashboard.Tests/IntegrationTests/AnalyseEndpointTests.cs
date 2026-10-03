@@ -25,6 +25,7 @@ public class AnalyseEndpointTests
 
                     services.AddSingleton<IRepositorySource>(
                         new FakeRepositorySource(
+                            typeof(LocalRepositoryReference),
                             new List<Commit>
                             {
                                 new(
@@ -71,6 +72,7 @@ public class AnalyseEndpointTests
 
                     services.AddSingleton<IRepositorySource>(
                         new FakeRepositorySource(
+                            typeof(LocalRepositoryReference),
                             new InvalidRepositoryException(
                                 "The repository could not be accessed."
                             )

@@ -10,8 +10,15 @@ public class LocalRepositorySource : IRepositorySource
         _gitService = gitService;
     }
     
-    public Task<List<Commit>> GetCommitsAsync(string repositoryPath, CancellationToken cancellationToken)
+    public Task<List<Commit>> GetCommitsAsync(RepositoryReference repository, CancellationToken cancellationToken)
     {
-        return _gitService.GetCommitsAsync(repositoryPath, cancellationToken);
+        var localRepository = (LocalRepositoryReference)repository;
+        
+        return _gitService.GetCommitsAsync(localRepository.Path, cancellationToken);
+    }
+
+    public bool CanHandle(RepositoryReference repository)
+    {
+        return repository is LocalRepositoryReference;
     }
 }

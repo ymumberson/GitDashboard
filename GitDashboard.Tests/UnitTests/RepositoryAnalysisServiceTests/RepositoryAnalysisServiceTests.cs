@@ -28,12 +28,14 @@ public class RepositoryAnalysisTests
             }
         );
 
-        var repositorySource = new FakeRepositorySource(commits);
+        var repositorySource = new FakeRepositorySource(typeof(LocalRepositoryReference), commits);
         var statisticsService = new FakeStatisticsService(expectedStats);
+        var repositoryReference = new LocalRepositoryReference("/test/repository");
+        var repositoryResolver = new RepositorySourceResolver(new[] {repositorySource});
 
-        var service = new RepositoryAnalysisService(repositorySource, statisticsService);
+        var service = new RepositoryAnalysisService(repositoryResolver, statisticsService);
 
-        var result = await service.AnalyseAsync("/test/repository", CancellationToken.None);
+        var result = await service.AnalyseAsync(repositoryReference, CancellationToken.None);
 
         Assert.Same(expectedStats, result);
     }

@@ -9,10 +9,10 @@ public class RepositorySourceTests
     public async Task GetCommitsAsync_PassesRepositoryPath()
     {
         var gitService = new FakeGitService([]);
-
         var repositorySource = new LocalRepositorySource(gitService);
+        var localRepositoryReference = new LocalRepositoryReference("/path/to/repository");
 
-        await repositorySource.GetCommitsAsync("/path/to/repository", CancellationToken.None);
+        await repositorySource.GetCommitsAsync(localRepositoryReference, CancellationToken.None);
 
         Assert.Equal("/path/to/repository", gitService.PassedRepositoryPath);
     }
@@ -24,8 +24,9 @@ public class RepositorySourceTests
 
         var repositorySource = new LocalRepositorySource(gitService);
         var cancellationTokenSource = new CancellationTokenSource();
+        var localRepositoryReference = new LocalRepositoryReference("/path/to/repository");
 
-        await repositorySource.GetCommitsAsync("/path/to/repository", cancellationTokenSource.Token);
+        await repositorySource.GetCommitsAsync(localRepositoryReference, cancellationTokenSource.Token);
 
         Assert.Equal(cancellationTokenSource.Token, gitService.PassedCancellationToken);
     }
@@ -48,10 +49,10 @@ public class RepositorySourceTests
         };
         
         var gitService = new FakeGitService(commits);
-
         var repositorySource = new LocalRepositorySource(gitService);
+        var localRepositoryReference = new LocalRepositoryReference("/path/to/repository");
 
-        var result = await repositorySource.GetCommitsAsync("/path/to/repository", CancellationToken.None);
+        var result = await repositorySource.GetCommitsAsync(localRepositoryReference, CancellationToken.None);
 
         Assert.Equal(commits, result);
     }

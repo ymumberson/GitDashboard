@@ -1,6 +1,7 @@
 using GitDashboard.Exceptions;
 using GitDashboard.Services;
 using GitDashboard.Configuration;
+using GitDashboard.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,7 @@ builder.Services.AddExceptionHandler<InvalidRepositoryResponseHandler>();
 builder.Services.AddSingleton<IGitRunner, GitRunner>();
 builder.Services.AddSingleton<IGitService, GitService>();
 builder.Services.AddSingleton<IRepositorySource, LocalRepositorySource>();
+builder.Services.AddSingleton<IRepositorySourceResolver, RepositorySourceResolver>();
 builder.Services.AddSingleton<IStatisticsService, StatisticsService>();
 builder.Services.AddSingleton<RepositoryAnalysisService>();
 
@@ -47,7 +49,7 @@ app.MapGet("api/analyse", async (
       );
    }
    
-   return Results.Ok(await service.AnalyseAsync(path, cancellationToken));
+   return Results.Ok(await service.AnalyseAsync(new LocalRepositoryReference(path), cancellationToken));
 });
 
 app.Run();

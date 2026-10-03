@@ -4,5 +4,7 @@ namespace GitDashboard.Services;
 
 public interface IRepositorySource
 {
-    Task<List<Commit>> GetCommitsAsync(string repositoryPath, CancellationToken cancellationToken);
+    Task<List<Commit>> GetCommitsAsync(RepositoryReference repository, CancellationToken cancellationToken);
+
+    bool CanHandle(RepositoryReference  repository);
 }
