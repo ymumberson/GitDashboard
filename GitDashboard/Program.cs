@@ -16,6 +16,8 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<InvalidRepositoryResponseHandler>();
 builder.Services.AddExceptionHandler<GitHubApiResponseHandler>();
 
+builder.Services.AddHealthChecks();
+
 builder.Services.AddSingleton<IGitRunner, GitRunner>();
 builder.Services.AddSingleton<IGitService, GitService>();
 builder.Services.AddSingleton<IRepositorySource, LocalRepositorySource>();
@@ -42,13 +44,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseExceptionHandler();
 
-app.MapGet("/api/hello", () =>
-{
-   return new
-   {
-       message = "Hello world!"
-   };
-});
+app.MapHealthChecks("/health");
 
 app.MapGet("api/analyse", async (
    string? path,
