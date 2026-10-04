@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { RepositoryStats } from "./types/RepositoryStats";
-import { getRepositoryStats } from "./api/repositoryApi";
+import type { RepositoryStats } from "../types/RepositoryStats";
+import { getRepositoryStats } from "../api/repositoryApi";
 
 interface DashboardProps {
     owner: string;

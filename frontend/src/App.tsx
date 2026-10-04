@@ -1,5 +1,5 @@
 import './App.css'
-import Dashboard from './RepositoryStats';
+import Dashboard from './Components/RepositoryStats';
 
 function App() {
   return (
