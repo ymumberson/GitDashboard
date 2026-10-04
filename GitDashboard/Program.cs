@@ -3,6 +3,7 @@ using GitDashboard.Services;
 using GitDashboard.Configuration;
 using GitDashboard.Models;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,10 @@ builder.Services
    .Bind(builder.Configuration.GetSection("Git"))
    .ValidateDataAnnotations()
    .ValidateOnStart();
+
+builder.Services
+    .AddOptions<GitHubOptions>()
+    .Bind(builder.Configuration.GetSection("GitHub"));
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<InvalidRepositoryResponseHandler>();
@@ -21,8 +26,12 @@ builder.Services.AddHealthChecks();
 builder.Services.AddSingleton<IGitRunner, GitRunner>();
 builder.Services.AddSingleton<IGitService, GitService>();
 builder.Services.AddSingleton<IRepositorySource, LocalRepositorySource>();
-builder.Services.AddHttpClient<GitHubRepositorySource>(client =>
+builder.Services.AddHttpClient<GitHubRepositorySource>((serviceProvider, client) =>
 {
+   var options = serviceProvider
+        .GetRequiredService<IOptions<GitHubOptions>>()
+        .Value;
+   
    client.BaseAddress = new Uri("https://api.github.com");
 
    client.DefaultRequestHeaders.Accept.Add(
@@ -31,6 +40,14 @@ builder.Services.AddHttpClient<GitHubRepositorySource>(client =>
 
     client.DefaultRequestHeaders.UserAgent.ParseAdd(
         "GitDashboard");
+
+   if (!string.IsNullOrWhiteSpace(options.Token))
+   {
+      client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue(
+                "Bearer",
+                options.Token);
+   }
 });
 builder.Services.AddSingleton<IRepositorySource>(sp =>
     sp.GetRequiredService<GitHubRepositorySource>());

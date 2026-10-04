@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using GitDashboard.Exceptions;
 using GitDashboard.Models;
 using GitDashboard.Services;
@@ -186,5 +187,49 @@ public class GitHubRepositorySourceTests
         await Assert.ThrowsAsync<HttpRequestException>(
             () => source.GetCommitsAsync(repository, CancellationToken.None)
         );
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_WithToken_SendsAuthorizationHeader()
+    {
+        // Arrange
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                "[]",
+                System.Text.Encoding.UTF8,
+                "application/json"
+            )
+        };
+
+        var handler = new FakeHttpMessageHandler(response);
+
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://api.github.com")
+        };
+
+        httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue(
+                "Bearer",
+                "test-github-token");
+
+        var source = new GitHubRepositorySource(httpClient);
+
+        var repository = new GitHubRepositoryReference("username", "repository");
+        
+        // Act
+        await source.GetCommitsAsync(repository, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(handler.ReceivedRequest);
+
+        Assert.Equal(
+        "Bearer",
+        handler.ReceivedRequest.Headers.Authorization?.Scheme);
+
+        Assert.Equal(
+            "test-github-token",
+            handler.ReceivedRequest.Headers.Authorization?.Parameter);
     }
 }
