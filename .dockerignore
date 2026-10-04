@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+
+.git/
+.gitignore
+
+frontend/node_modules/
+frontend/dist/
+
+GitDashboard.Tests/

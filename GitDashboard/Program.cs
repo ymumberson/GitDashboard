@@ -57,8 +57,6 @@ builder.Services.AddSingleton<RepositoryAnalysisService>();
 
 var app = builder.Build();
 
-app.UseDefaultFiles();
-app.UseStaticFiles();
 app.UseExceptionHandler();
 
 app.MapHealthChecks("/health");
