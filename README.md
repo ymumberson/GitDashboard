@@ -6,6 +6,8 @@ The project is primarily a **practical learning and portfolio project**, focused
 
 The application is being developed incrementally, with tests used to drive implementation and design decisions rather than building the entire application upfront.
 
+You can find the hosted version [here](https://gitdashboard-f4mr.onrender.com/).
+
 ## Project Goals
 
 The main goal is to use a real, evolving application to develop practical backend engineering skills.
