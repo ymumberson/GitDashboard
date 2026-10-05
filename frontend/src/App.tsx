@@ -31,9 +31,11 @@ function App() {
   const isNullOrWhiteSpace = (value: string | null | undefined): boolean => value == null || value.trim() === "";
 
   return (
-    <div>
+    <div className='px-12'>
       <h1>GitDashboard</h1>
-      <DashboardInput onSubmit={handleRepositorySubmit} isLoading={isLoading}/>
+      <div className='flex flex-col w-full items-center'>
+        <DashboardInput onSubmit={handleRepositorySubmit} isLoading={isLoading}/>
+      </div>
       {isLoading && <p>Analysing repository...</p>}
       {error && <p role="alert">{error}</p>}
       {stats && <Dashboard stats={stats}/>}

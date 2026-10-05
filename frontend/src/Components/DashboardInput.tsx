@@ -61,7 +61,9 @@ export default function DashboardInput({onSubmit, isLoading}: DashboardInputProp
                 </div>
 
                 {validationError && (
-                    <p role="alert">{validationError}</p>
+                    <div className="p-4 mt-6 text-sm text-fg-danger-strong rounded-base bg-danger-soft" role="alert">
+                        {validationError}
+                    </div>
                 )}
 
                 <button
