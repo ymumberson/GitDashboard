@@ -10,3 +10,11 @@ body {
   margin: 0;
   font-family: 'Inter', sans-serif;
 }
+
+:root {
+    --chart-primary: #1a56db;
+}
+
+.dark {
+    --chart-primary: #3f83f8;
+}

@@ -13,8 +13,7 @@ export default function CommitsOverTime({commitsByDate}: CommitsOverTimeProps) {
         .sort((a, b) => a.date.localeCompare(b.date));
 
         return (
-            <div>
-                <h2>Commits over time</h2>
+            <div className="w-md md:w-3xl">
                 <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={data}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -23,7 +22,7 @@ export default function CommitsOverTime({commitsByDate}: CommitsOverTimeProps) {
                         <Line 
                             type="monotone"
                             dataKey="commits"
-                            stroke="#8884d8"
+                            stroke="var(--chart-primary)"
                             activeDot={{ r: 8 }}
                             animationDuration={1000}
                         />

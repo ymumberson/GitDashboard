@@ -4,6 +4,8 @@ import Dashboard from './Components/Dashboard';
 import DashboardInput from './Components/DashboardInput';
 import type { RepositoryStats } from './types/RepositoryStats';
 import { getRepositoryStats } from './api/repositoryApi';
+import GraphPlaceholder from './Components/GraphPlaceholder';
+import LoadingSpinner from './Components/LoadingSpinner';
 
 function App() {
   const [stats, setStats] = useState<RepositoryStats | null>(null);
@@ -32,13 +34,18 @@ function App() {
 
   return (
     <div className='px-12'>
-      <h1>GitDashboard</h1>
+      <div className="mb-10 mt-10 w-full text-center">
+        <h1 className="text-5xl font-bold text-heading">Git Dashboard</h1>
+      </div>
       <div className='flex flex-col w-full items-center'>
         <DashboardInput onSubmit={handleRepositorySubmit} isLoading={isLoading}/>
+        {isLoading &&
+          <div className="pt-6">
+            <LoadingSpinner />
+          </div>}
+        {error && <p role="alert">{error}</p>}
+        {stats && <Dashboard stats={stats}/>}
       </div>
-      {isLoading && <p>Analysing repository...</p>}
-      {error && <p role="alert">{error}</p>}
-      {stats && <Dashboard stats={stats}/>}
     </div>
   )
 }

@@ -8,14 +8,8 @@ export default function StatCard({
     value
 }: StatCardProps) {
     return (
-        <div>
-            <div>
-                {title}
-            </div>
-
-            <div>
-                {value.toLocaleString()}
-            </div>
+        <div className="p-4 mb-4 text-sm text-fg-brand-strong rounded-base bg-brand-softer">
+            <span className="font-medium">{title}</span> {value.toLocaleString()}
         </div>
     );
 }

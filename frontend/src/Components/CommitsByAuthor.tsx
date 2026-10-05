@@ -11,9 +11,7 @@ export default function CommitsByAuthor({commitsByAuthor}: CommitsByAuthorProps)
     })).sort((a, b) => b.commits - a.commits);
 
     return (
-        <div>
-            <h2>Commits by author</h2>
-
+        <div className="w-md md:w-3xl">
             <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                     data={data}
@@ -47,6 +45,7 @@ export default function CommitsByAuthor({commitsByAuthor}: CommitsByAuthorProps)
                         dataKey="commits"
                         radius={[0, 6, 6, 0]}
                         animationDuration={1000}
+                        fill="var(--chart-primary)"
                     />
                 </BarChart>
             </ResponsiveContainer>
