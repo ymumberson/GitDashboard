@@ -1,4 +1,5 @@
 import type { RepositoryStats } from "../types/RepositoryStats";
+import CommitsByAuthor from "./CommitsByAuthor";
 import CommitsOverTime from "./CommitsOverTime";
 
 interface DashboardProps {
@@ -11,16 +12,7 @@ export default function Dashboard({stats}: DashboardProps) {
             <h2>Overview</h2>
             <p>Total commits: {stats.totalCommits}</p>
 
-            <h2>Commits by author</h2>
-            <ul>
-                {
-                    Object.entries(stats.commitsByAuthor).map(([author, count]) => (
-                        <li key={author}>
-                            {author}: {count}
-                        </li>
-                    ))
-                }
-            </ul>
+            <CommitsByAuthor commitsByAuthor={stats.commitsByAuthor} />
 
             <CommitsOverTime commitsByDate={stats.commitsByDate}/>
         </div>
