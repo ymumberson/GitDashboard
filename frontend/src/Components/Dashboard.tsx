@@ -1,44 +1,10 @@
-import { useEffect, useState } from "react";
 import type { RepositoryStats } from "../types/RepositoryStats";
-import { getRepositoryStats } from "../api/repositoryApi";
 
 interface DashboardProps {
-    owner: string;
-    name: string;
+    stats: RepositoryStats;
 }
 
-export default function Dashboard({owner, name}: DashboardProps) {
-    const [stats, setStats] = useState<RepositoryStats | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        setStats(null);
-        setError(null);
-
-        if (isNullOrWhiteSpace(owner) || isNullOrWhiteSpace(name))
-            return;
-        
-        getRepositoryStats(owner, name)
-            .then(setStats)
-            .catch(error => {
-                setError(error instanceof Error ? error.message : 'Unknown error')
-            });
-    }, [owner, name]);
-
-    const isNullOrWhiteSpace = (value: string | null | undefined): boolean => value == null || value.trim() === "";
-
-    if (error) {
-        return <p>Error: {error}</p>
-    }
-
-    if (isNullOrWhiteSpace(owner) || isNullOrWhiteSpace(name)) {
-        return <p>Please enter a username and repository</p>
-    }
-
-    if (!stats) {
-        return <p>Loading...</p>
-    }
-
+export default function Dashboard({stats}: DashboardProps) {
     return (
         <div>
             <h2>Overview</h2>
