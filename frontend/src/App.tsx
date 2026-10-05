@@ -4,7 +4,6 @@ import Dashboard from './Components/Dashboard';
 import DashboardInput from './Components/DashboardInput';
 import type { RepositoryStats } from './types/RepositoryStats';
 import { getRepositoryStats } from './api/repositoryApi';
-import GraphPlaceholder from './Components/GraphPlaceholder';
 import LoadingSpinner from './Components/LoadingSpinner';
 
 function App() {
