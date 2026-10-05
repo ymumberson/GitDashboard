@@ -1,70 +1,23 @@
-import { useEffect, useState } from "react";
 import type { RepositoryStats } from "../types/RepositoryStats";
-import { getRepositoryStats } from "../api/repositoryApi";
+import CommitsByAuthor from "./CommitsByAuthor";
+import CommitsOverTime from "./CommitsOverTime";
+import StatCard from "./StatCard";
 
 interface DashboardProps {
-    owner: string;
-    name: string;
+    stats: RepositoryStats;
 }
 
-export default function Dashboard({owner, name}: DashboardProps) {
-    const [stats, setStats] = useState<RepositoryStats | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        setStats(null);
-        setError(null);
-
-        if (isNullOrWhiteSpace(owner) || isNullOrWhiteSpace(name))
-            return;
-        
-        getRepositoryStats(owner, name)
-            .then(setStats)
-            .catch(error => {
-                setError(error instanceof Error ? error.message : 'Unknown error')
-            });
-    }, [owner, name]);
-
-    const isNullOrWhiteSpace = (value: string | null | undefined): boolean => value == null || value.trim() === "";
-
-    if (error) {
-        return <p>Error: {error}</p>
-    }
-
-    if (isNullOrWhiteSpace(owner) || isNullOrWhiteSpace(name)) {
-        return <p>Please enter a username and repository</p>
-    }
-
-    if (!stats) {
-        return <p>Loading...</p>
-    }
-
+export default function Dashboard({stats}: DashboardProps) {
     return (
-        <div>
-            <h2>Overview</h2>
-            <p>Total commits: {stats.totalCommits}</p>
+        <div className="flex flex-col">
+            <h2 className="mt-6 mb-2 text-3xl font-bold tracking-tight text-heading md:text-4xl">Overview</h2>
+            <StatCard title="Total commits" value={stats.totalCommits}/>
 
-            <h2>Commits by author</h2>
-            <ul>
-                {
-                    Object.entries(stats.commitsByAuthor).map(([author, count]) => (
-                        <li key={author}>
-                            {author}: {count}
-                        </li>
-                    ))
-                }
-            </ul>
+            <h2 className="mt-6 mb-2 text-3xl font-bold tracking-tight text-heading md:text-4xl">Commits by author</h2>
+            <CommitsByAuthor commitsByAuthor={stats.commitsByAuthor} />
 
-            <h2>Commits by date</h2>
-            <ul>
-                {
-                    Object.entries(stats.commitsByDate).map(([date, count]) => (
-                        <li key={date}>
-                            {date}: {count}
-                        </li>
-                    ))
-                }
-            </ul>
+            <h2 className="mt-6 mb-2 text-3xl font-bold tracking-tight text-heading md:text-4xl">Commits over time</h2>
+            <CommitsOverTime commitsByDate={stats.commitsByDate}/>
         </div>
     )
 }
