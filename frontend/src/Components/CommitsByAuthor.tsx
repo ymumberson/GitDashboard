@@ -11,15 +11,15 @@ export default function CommitsByAuthor({commitsByAuthor}: CommitsByAuthorProps)
     })).sort((a, b) => b.commits - a.commits);
 
     return (
-        <div className="w-md md:w-3xl">
+        <div className="md:w-3xl">
             <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                     data={data}
                     layout="vertical"
                     margin={{
                         top: 10,
-                        right: 20,
-                        left: 20,
+                        right: 10,
+                        left: 10,
                         bottom: 10
                     }}
                 >
