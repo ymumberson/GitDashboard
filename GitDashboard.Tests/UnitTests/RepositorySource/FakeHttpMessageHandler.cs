@@ -2,20 +2,20 @@ namespace GitDashboard.Tests;
 
 public class FakeHttpMessageHandler : HttpMessageHandler
 {
-    private readonly HttpResponseMessage _response;
-    public HttpRequestMessage? ReceivedRequest {get; private set;}
+    private readonly Func<HttpRequestMessage, HttpResponseMessage> _responseFactory;
+    public List<HttpRequestMessage> ReceivedRequests {get;} = [];
     public CancellationToken? ReceivedCancellationToken {get; private set;}
     private readonly bool _waitForCancellation;
 
-    public FakeHttpMessageHandler(HttpResponseMessage response, bool waitForCancellation = false)
+    public FakeHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> responseFactory, bool waitForCancellation = false)
     {
-        _response = response;
+        _responseFactory = responseFactory;
         _waitForCancellation = waitForCancellation;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        ReceivedRequest = request;
+        ReceivedRequests.Add(request);
         ReceivedCancellationToken = cancellationToken;
 
         if (_waitForCancellation)
@@ -23,6 +23,6 @@ public class FakeHttpMessageHandler : HttpMessageHandler
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
         }
         
-        return _response;
+        return _responseFactory(request);
     }
 }
