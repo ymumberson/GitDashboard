@@ -287,6 +287,160 @@ public class GitHubRepositorySourceTests
             GetPage(handler.ReceivedRequests[2]));
     }
 
+    [Fact]
+    public async Task GetCommitsAsync_Requests100CommitsPerPage()
+    {
+        // Arrange
+        var page1 = CreateGitHubCommits(100);
+        var page2 = CreateGitHubCommits(100, 100);
+        var page3 = CreateGitHubCommits(50, 200);
+
+        var handler = new FakeHttpMessageHandler(request =>
+        {
+            var page = int.Parse(
+                System.Web.HttpUtility.ParseQueryString(request.RequestUri!.Query)["page"]!
+            );
+
+            return page switch
+            {
+                1 => CreateResponse(page1),
+                2 => CreateResponse(page2),
+                3 => CreateResponse(page3),
+                _ => throw new InvalidOperationException()
+            };
+        });
+
+        var httpClient = new HttpClient(handler)
+        {
+             BaseAddress = new Uri("https://api.github.com")
+        };
+
+        var source = new GitHubRepositorySource(httpClient);
+
+        var repository = new GitHubRepositoryReference("username", "repository");
+
+        // Act
+        var commits = await source.GetCommitsAsync(repository, CancellationToken.None);
+
+        // Assert
+        Assert.Contains("per_page=100", handler.ReceivedRequests[0]!.RequestUri!.Query);
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_WhenPageHasLessThanMaxCommits_DoesNotRequestExtraPage()
+    {
+        // Arrange
+        var page1 = CreateGitHubCommits(100);
+        var page2 = CreateGitHubCommits(100, 100);
+        var page3 = CreateGitHubCommits(50, 200);
+
+        var handler = new FakeHttpMessageHandler(request =>
+        {
+            var page = int.Parse(
+                System.Web.HttpUtility.ParseQueryString(request.RequestUri!.Query)["page"]!
+            );
+
+            return page switch
+            {
+                1 => CreateResponse(page1),
+                2 => CreateResponse(page2),
+                3 => CreateResponse(page3),
+                _ => throw new InvalidOperationException()
+            };
+        });
+
+        var httpClient = new HttpClient(handler)
+        {
+             BaseAddress = new Uri("https://api.github.com")
+        };
+
+        var source = new GitHubRepositorySource(httpClient);
+
+        var repository = new GitHubRepositoryReference("username", "repository");
+
+        // Act
+        var commits = await source.GetCommitsAsync(repository, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(3, handler.ReceivedRequests.Count);
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_WhenPageHasMaxCommits_RequestsOneAdditionalPage()
+    {
+        // Arrange
+        var page1 = CreateGitHubCommits(100);
+        var page2 = CreateGitHubCommits(100, 100);
+        var page3 = CreateGitHubCommits(100, 200);
+
+        var handler = new FakeHttpMessageHandler(request =>
+        {
+            var page = int.Parse(
+                System.Web.HttpUtility.ParseQueryString(request.RequestUri!.Query)["page"]!
+            );
+
+            return page switch
+            {
+                1 => CreateResponse(page1),
+                2 => CreateResponse(page2),
+                3 => CreateResponse(page3),
+                4 => CreateResponse([]),
+                _ => throw new InvalidOperationException()
+            };
+        });
+
+        var httpClient = new HttpClient(handler)
+        {
+             BaseAddress = new Uri("https://api.github.com")
+        };
+
+        var source = new GitHubRepositorySource(httpClient);
+
+        var repository = new GitHubRepositoryReference("username", "repository");
+
+        // Act
+        var commits = await source.GetCommitsAsync(repository, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(4, handler.ReceivedRequests.Count);
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_WhenRepositoryHasLessThanOncePage_RequestsOnlyOnePage()
+    {
+        // Arrange
+        var page1 = CreateGitHubCommits(50);
+
+        var handler = new FakeHttpMessageHandler(request =>
+        {
+            var page = int.Parse(
+                System.Web.HttpUtility.ParseQueryString(request.RequestUri!.Query)["page"]!
+            );
+
+            return page switch
+            {
+                1 => CreateResponse(page1),
+                2 => CreateResponse([]),
+                _ => throw new InvalidOperationException()
+            };
+        });
+
+        var httpClient = new HttpClient(handler)
+        {
+             BaseAddress = new Uri("https://api.github.com")
+        };
+
+        var source = new GitHubRepositorySource(httpClient);
+
+        var repository = new GitHubRepositoryReference("username", "repository");
+
+        // Act
+        var commits = await source.GetCommitsAsync(repository, CancellationToken.None);
+
+        // Assert
+        Assert.Single(handler.ReceivedRequests);
+    }
+
     private static HttpResponseMessage CreateResponse(List<GitHubCommitResponse> commits)
     {
         return new HttpResponseMessage(HttpStatusCode.OK)
