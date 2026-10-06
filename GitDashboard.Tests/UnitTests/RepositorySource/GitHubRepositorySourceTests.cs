@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using GitDashboard.Exceptions;
 using GitDashboard.Models;
 using GitDashboard.Services;
@@ -44,7 +45,7 @@ public class GitHubRepositorySourceTests
             )
         };
 
-        var handler = new FakeHttpMessageHandler(response);
+        var handler = new FakeHttpMessageHandler((_) => response);
         var httpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri("https://api.github.com")
@@ -86,7 +87,7 @@ public class GitHubRepositorySourceTests
             )
         };
 
-        var handler = new FakeHttpMessageHandler(response);
+        var handler = new FakeHttpMessageHandler((_) => response);
 
         var httpClient = new HttpClient(handler)
         {
@@ -101,9 +102,9 @@ public class GitHubRepositorySourceTests
         await source.GetCommitsAsync(repository, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(handler.ReceivedRequest);
+        Assert.NotNull(handler.ReceivedRequests[0]);
 
-        Assert.Equal("/repos/username/repository/commits", handler.ReceivedRequest!.RequestUri!.PathAndQuery);
+        Assert.Equal("/repos/username/repository/commits", handler.ReceivedRequests[0]!.RequestUri!.PathAndQuery);
     }
 
     [Fact]
@@ -112,7 +113,7 @@ public class GitHubRepositorySourceTests
         // Arrange
         var response = new HttpResponseMessage(HttpStatusCode.NotFound);
 
-        var handler = new FakeHttpMessageHandler(response);
+        var handler = new FakeHttpMessageHandler((_) => response);
 
         var httpClient = new HttpClient(handler)
         {
@@ -142,7 +143,7 @@ public class GitHubRepositorySourceTests
             )
         };
 
-        var handler = new FakeHttpMessageHandler(response, true);
+        var handler = new FakeHttpMessageHandler((_) => response, true);
 
         var httpClient = new HttpClient(handler)
         {
@@ -172,7 +173,7 @@ public class GitHubRepositorySourceTests
         // Arrange
         var response = new HttpResponseMessage(HttpStatusCode.Forbidden);
 
-        var handler = new FakeHttpMessageHandler(response);
+        var handler = new FakeHttpMessageHandler((_) => response);
 
         var httpClient = new HttpClient(handler)
         {
@@ -202,7 +203,7 @@ public class GitHubRepositorySourceTests
             )
         };
 
-        var handler = new FakeHttpMessageHandler(response);
+        var handler = new FakeHttpMessageHandler((_) => response);
 
         var httpClient = new HttpClient(handler)
         {
@@ -222,14 +223,108 @@ public class GitHubRepositorySourceTests
         await source.GetCommitsAsync(repository, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(handler.ReceivedRequest);
+        Assert.NotNull(handler.ReceivedRequests[0]);
 
         Assert.Equal(
         "Bearer",
-        handler.ReceivedRequest.Headers.Authorization?.Scheme);
+        handler.ReceivedRequests[0].Headers.Authorization?.Scheme);
 
         Assert.Equal(
             "test-github-token",
-            handler.ReceivedRequest.Headers.Authorization?.Parameter);
+            handler.ReceivedRequests[0].Headers.Authorization?.Parameter);
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_FetchesAllPages()
+    {
+        // Arrange
+        var page1 = CreateGitHubCommits(100);
+        var page2 = CreateGitHubCommits(100, 100);
+        var page3 = CreateGitHubCommits(50, 200);
+
+        var handler = new FakeHttpMessageHandler(request =>
+        {
+            var page = int.Parse(
+                System.Web.HttpUtility.ParseQueryString(request.RequestUri!.Query)["page"]!
+            );
+
+            return page switch
+            {
+                1 => CreateResponse(page1),
+                2 => CreateResponse(page2),
+                3 => CreateResponse(page3),
+                _ => throw new InvalidOperationException()
+            };
+        });
+
+        var httpClient = new HttpClient(handler)
+        {
+             BaseAddress = new Uri("https://api.github.com")
+        };
+
+        var source = new GitHubRepositorySource(httpClient);
+
+        var repository = new GitHubRepositoryReference("username", "repository");
+
+        // Act
+        var commits = await source.GetCommitsAsync(repository, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(250, commits.Count);
+
+        Assert.Equal(3, handler.ReceivedRequests.Count);
+
+        Assert.Equal(
+            1,
+            GetPage(handler.ReceivedRequests[0]));
+
+        Assert.Equal(
+            2,
+            GetPage(handler.ReceivedRequests[1]));
+
+        Assert.Equal(
+            3,
+            GetPage(handler.ReceivedRequests[2]));
+    }
+
+    private static HttpResponseMessage CreateResponse(List<GitHubCommitResponse> commits)
+    {
+        return new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = JsonContent.Create(commits)
+        };
+    }
+
+    private static int GetPage(HttpRequestMessage request)
+    {
+        var query = System.Web.HttpUtility.ParseQueryString(
+            request.RequestUri!.Query);
+
+        return int.Parse(query["page"]!);
+    }
+
+    private static List<GitHubCommitResponse> CreateGitHubCommits(int count, int startIndex = 0)
+    {
+        var random = new Random(12345);
+        return Enumerable.Range(startIndex, count)
+            .Select(index => new GitHubCommitResponse
+            {
+                Sha = $"sha-{index}",
+                Commit = new GitHubCommit
+                {
+                    Author = new GitHubCommitAuthor
+                    {
+                        Name = $"Author {index}",
+                        Date = new DateTime(
+                            random.Next(2020, 2027),
+                            random.Next(1, 13),
+                            random.Next(1, 29),
+                            random.Next(0, 24),
+                            random.Next(0, 60),
+                            random.Next(0, 60),
+                            DateTimeKind.Utc)
+                    }
+                }
+            }).ToList();
     }
 }
