@@ -104,7 +104,7 @@ public class GitHubRepositorySourceTests
         // Assert
         Assert.NotNull(handler.ReceivedRequests[0]);
 
-        Assert.Equal("/repos/username/repository/commits", handler.ReceivedRequests[0]!.RequestUri!.PathAndQuery);
+        Assert.Equal("/repos/username/repository/commits?per_page=100&page=1", handler.ReceivedRequests[0]!.RequestUri!.PathAndQuery);
     }
 
     [Fact]

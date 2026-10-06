@@ -27,20 +27,37 @@ public class GitHubRepositorySource : IRepositorySource
                 nameof(repository));
         }
 
-        var response = await _httpClient.GetAsync(
-            $"/repos/{gitHubRepositoryReference.Owner}/{gitHubRepositoryReference.Name}/commits",
-            cancellationToken
-        );
+        const int pageSize = 100;
+        var page = 1;
+        var commits = new List<GitHubCommitResponse>();
 
-        if (response.StatusCode == HttpStatusCode.NotFound)
+        while (true)
         {
-            throw new InvalidRepositoryException($"The GitHub repository could not be found.");
+            var response = await _httpClient.GetAsync(
+                $"/repos/{gitHubRepositoryReference.Owner}/{gitHubRepositoryReference.Name}/commits" +
+                $"?per_page={pageSize}&page={page}",
+                cancellationToken
+            );
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                throw new InvalidRepositoryException($"The GitHub repository could not be found.");
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            var pageCommits = await response.Content.ReadFromJsonAsync<List<GitHubCommitResponse>>(cancellationToken) ?? [];
+        
+            commits.AddRange(pageCommits);
+
+            if (pageCommits.Count < pageSize)
+            {
+                break;
+            }
+
+            page++;
         }
-
-        response.EnsureSuccessStatusCode();
-
-        var commits = await response.Content.ReadFromJsonAsync<List<GitHubCommitResponse>>(cancellationToken);
-
+        
         return commits?
             .Select(commit => new Commit(commit.Sha, commit.Commit.Author.Name, DateOnly.FromDateTime(commit.Commit.Author.Date)))
             .ToList()
