@@ -5,6 +5,7 @@ import DashboardInput from './Components/DashboardInput';
 import type { RepositoryStats } from './types/RepositoryStats';
 import { getRepositoryStats } from './api/repositoryApi';
 import LoadingSpinner from './Components/LoadingSpinner';
+import AlertBanner from './Components/AlertBanner';
 
 function App() {
   const [stats, setStats] = useState<RepositoryStats | null>(null);
@@ -42,7 +43,11 @@ function App() {
           <div className="pt-6">
             <LoadingSpinner />
           </div>}
-        {error && <p role="alert">{error}</p>}
+        {error && 
+          <div className='mt-6'>
+            <AlertBanner type='ERROR' message={error}/>
+          </div>
+        }
         {stats && <Dashboard stats={stats}/>}
       </div>
     </div>
