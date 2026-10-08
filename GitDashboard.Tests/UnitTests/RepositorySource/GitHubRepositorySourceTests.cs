@@ -442,7 +442,7 @@ public class GitHubRepositorySourceTests
     }
 
     [Fact]
-    public async Task GetCommitsAsync_WhenGitHubApiTokenLimitReached_Returns403()
+    public async Task GetCommitsAsync_WhenGitHubApiTokenLimitReached_ThrowsGitHubRateLimitException()
     {
         // Arrange
         var response = new HttpResponseMessage(HttpStatusCode.Forbidden);
@@ -457,6 +457,24 @@ public class GitHubRepositorySourceTests
 
         // Act & Assert
         await Assert.ThrowsAsync<GitHubRateLimitException>(() => service.GetCommitsAsync(repository, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetCommitsAsync_WhenForbiddenRateLimitNotReached_ThrowsHttpRequestException()
+    {
+        // Arrange
+        var response = new HttpResponseMessage(HttpStatusCode.Forbidden);
+        response.Headers.Add("X-RateLimit-Remaining", "10");
+        var handler = new FakeHttpMessageHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://api.github.com")
+        };
+        var service = new GitHubRepositorySource(httpClient);
+        var repository = new GitHubRepositoryReference("username", "repository");
+
+        // Act & Assert
+        await Assert.ThrowsAsync<HttpRequestException>(() => service.GetCommitsAsync(repository, CancellationToken.None));
     }
 
     private static HttpResponseMessage CreateResponse(List<GitHubCommitResponse> commits)
