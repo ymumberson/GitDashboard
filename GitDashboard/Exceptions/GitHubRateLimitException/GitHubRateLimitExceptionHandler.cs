@@ -2,21 +2,21 @@ using Microsoft.AspNetCore.Diagnostics;
 
 namespace GitDashboard.Exceptions;
 
-public class GitHubApiResponseHandler : IExceptionHandler
+public class GitHubRateLimitExceptionHandler : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
         Exception exception,
         CancellationToken cancellationToken)
     {
-        if (exception is not GitHubApiException)
+        if (exception is not GitHubRateLimitException)
         {
             return false;
         }
 
         await Results.Problem(
-            statusCode: StatusCodes.Status502BadGateway,
-            title: "GitHub API error",
+            statusCode: StatusCodes.Status429TooManyRequests,
+            title: "GitHub API rate limit reached",
             detail: exception.Message
         ).ExecuteAsync(httpContext);
 

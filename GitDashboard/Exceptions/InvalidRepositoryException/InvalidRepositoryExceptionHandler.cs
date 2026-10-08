@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GitDashboard.Exceptions;
 
-public class InvalidRepositoryResponseHandler : IExceptionHandler
+public class InvalidRepositoryExceptionHandler : IExceptionHandler
 {
     private readonly IProblemDetailsService _problemDetailsService;
 
-    public InvalidRepositoryResponseHandler(
+    public InvalidRepositoryExceptionHandler(
         IProblemDetailsService problemDetailsService)
     {
         _problemDetailsService = problemDetailsService;

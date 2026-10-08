@@ -18,8 +18,9 @@ builder.Services
     .Bind(builder.Configuration.GetSection("GitHub"));
 
 builder.Services.AddProblemDetails();
-builder.Services.AddExceptionHandler<InvalidRepositoryResponseHandler>();
-builder.Services.AddExceptionHandler<GitHubApiResponseHandler>();
+builder.Services.AddExceptionHandler<InvalidRepositoryExceptionHandler>();
+builder.Services.AddExceptionHandler<GitHubApiExceptionHandler>();
+builder.Services.AddExceptionHandler<GitHubRateLimitExceptionHandler>();
 
 builder.Services.AddHealthChecks();
 
