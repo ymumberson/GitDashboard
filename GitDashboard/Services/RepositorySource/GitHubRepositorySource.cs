@@ -1,4 +1,5 @@
 using System.Net;
+using System.Windows.Markup;
 using GitDashboard.Exceptions;
 using GitDashboard.Models;
 
@@ -42,6 +43,12 @@ public class GitHubRepositorySource : IRepositorySource
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
                 throw new InvalidRepositoryException($"The GitHub repository could not be found.");
+            }
+            else if (response.StatusCode == HttpStatusCode.Forbidden && 
+                response.Headers.TryGetValues("X-RateLimit-Remaining", out var remaining) &&
+                remaining.FirstOrDefault() == "0")
+            {
+                    throw new GitHubRateLimitException("GitHub API token limit reached");
             }
 
             response.EnsureSuccessStatusCode();

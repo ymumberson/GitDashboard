@@ -13,6 +13,12 @@ public class FakeHttpMessageHandler : HttpMessageHandler
         _waitForCancellation = waitForCancellation;
     }
 
+    public FakeHttpMessageHandler(HttpResponseMessage response, bool waitForCancellation = false)
+    {
+        _responseFactory = (_) => response;
+        _waitForCancellation = waitForCancellation;
+    }
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         ReceivedRequests.Add(request);
