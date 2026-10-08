@@ -48,7 +48,15 @@ public class GitHubRepositorySource : IRepositorySource
                 response.Headers.TryGetValues("X-RateLimit-Remaining", out var remaining) &&
                 remaining.FirstOrDefault() == "0")
             {
-                    throw new GitHubRateLimitException("GitHub API token limit reached");
+                DateTimeOffset? resetsAt = null;
+
+                if (response.Headers.TryGetValues("X-RateLimit-Reset", out var resetValues) &&
+                    long.TryParse(resetValues.FirstOrDefault(), out var resetTimeStamp))
+                {
+                    resetsAt = DateTimeOffset.FromUnixTimeSeconds(resetTimeStamp);
+                }
+                    
+                throw new GitHubRateLimitException("GitHub API rate limit reached");
             }
 
             response.EnsureSuccessStatusCode();
