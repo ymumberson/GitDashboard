@@ -43,6 +43,20 @@ public class GitHubRepositorySource : IRepositorySource
             {
                 throw new InvalidRepositoryException($"The GitHub repository could not be found.");
             }
+            else if (response.StatusCode == HttpStatusCode.Forbidden && 
+                response.Headers.TryGetValues("X-RateLimit-Remaining", out var remaining) &&
+                remaining.FirstOrDefault() == "0")
+            {
+                DateTimeOffset? resetsAt = null;
+
+                if (response.Headers.TryGetValues("X-RateLimit-Reset", out var resetValues) &&
+                    long.TryParse(resetValues.FirstOrDefault(), out var resetTimeStamp))
+                {
+                    resetsAt = DateTimeOffset.FromUnixTimeSeconds(resetTimeStamp);
+                }
+                    
+                throw new GitHubRateLimitException("GitHub API rate limit reached", resetsAt);
+            }
 
             response.EnsureSuccessStatusCode();
 

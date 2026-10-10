@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Diagnostics;
 
 namespace GitDashboard.Exceptions;
 
-public class GitHubApiResponseHandler : IExceptionHandler
+public class GitHubApiExceptionHandler : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AlertBanner from "./AlertBanner";
 
 interface DashboardInputProps {
     onSubmit: (owner: string, name: string) => void;
@@ -45,7 +46,7 @@ export default function DashboardInput({onSubmit, isLoading}: DashboardInputProp
                     />
                 </div>
 
-                <div>
+                <div className="mb-6">
                     <label
                         htmlFor="name"
                         className="block mb-2.5 text-sm font-medium text-heading"
@@ -61,15 +62,13 @@ export default function DashboardInput({onSubmit, isLoading}: DashboardInputProp
                 </div>
 
                 {validationError && (
-                    <div className="p-4 mt-6 text-sm text-fg-danger-strong rounded-base bg-danger-soft" role="alert">
-                        {validationError}
-                    </div>
+                    <AlertBanner type="ERROR" message={validationError}/>
                 )}
 
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="my-6 text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none w-full mb-3"
+                    className="mt-2 text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none w-full mb-3"
                 >
                     Analyse
                 </button>
