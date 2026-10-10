@@ -1,5 +1,5 @@
+using System.Diagnostics;
 using GitDashboard.Services;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace GitDashboard.Tests;
@@ -52,27 +52,32 @@ public class GitRunnerIntegrationTests
 
     private static async Task RunGitCommand(string repositoryPath, string arguments)
     {
-        using var process = new System.Diagnostics.Process
+        var startInfo = new ProcessStartInfo
         {
-            StartInfo = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "git",
-                Arguments = arguments,
-                WorkingDirectory = repositoryPath,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false
-            }
+            FileName = "git",
+            Arguments = arguments,
+            WorkingDirectory = repositoryPath,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
         };
 
-        process.Start();
+        using var process = Process.Start(startInfo)!;
 
-        await process.StandardOutput.ReadToEndAsync();
-        var error = process.StandardError.ReadToEndAsync();
+        var outputTask = process.StandardOutput.ReadToEndAsync();
+        var errorTask = process.StandardError.ReadToEndAsync();
 
         await process.WaitForExitAsync();
 
-        Assert.Equal(0, process.ExitCode);
+        var output = await outputTask;
+        var error = await errorTask;
+
+        Assert.True(
+            process.ExitCode == 0,
+            $"Git command failed: git {arguments}\n" +
+            $"Exit code: {process.ExitCode}\n" +
+            $"Standard error: {error}\n" +
+            $"Standard output: {output}");
     }
 
     private static void DeleteDirectory(string path)
