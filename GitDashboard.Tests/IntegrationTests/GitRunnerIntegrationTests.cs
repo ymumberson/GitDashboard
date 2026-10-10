@@ -20,6 +20,9 @@ public class GitRunnerIntegrationTests
         {
             await RunGitCommand(repositoryPath, "init");
 
+            await RunGitCommand(repositoryPath, "config user.name \"GitDashboard Tests\"");
+            await RunGitCommand(repositoryPath, "config user.email \"gitdashboard-tests@example.com\"");
+
             await File.WriteAllTextAsync(
                 Path.Combine(repositoryPath, "test.txt"),
                 "Hello, World!"
