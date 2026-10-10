@@ -1,12 +1,12 @@
 # GitDashboard
 
-GitDashboard is a .NET backend project for analysing Git repositories and exposing repository statistics through an HTTP API.
+GitDashboard is a web application for analysing local Git repositories and public GitHub repositories. A React frontend displays repository statistics returned by an ASP.NET Core API.
 
 The project is primarily a **practical learning and portfolio project**, focused on developing deeper experience with C#, .NET, ASP.NET Core, backend architecture, automated testing, and Test-Driven Development (TDD).
 
-The application is being developed incrementally, with tests used to drive implementation and design decisions rather than building the entire application upfront.
+The application is developed incrementally, with tests used to drive implementation and design decisions.
 
-You can find the hosted version [here](https://gitdashboard-f4mr.onrender.com/).
+Try the [hosted application](https://gitdashboard-f4mr.onrender.com/). The app is containerised with Docker and served on Render.
 
 ## Project Goals
 
@@ -34,7 +34,7 @@ The project is intentionally designed so that architectural decisions emerge fro
 
 ## Current Status
 
-The application currently supports analysing both **local Git repositories** and **public GitHub repositories**.
+The application currently supports analysing **local Git repositories** and **public GitHub repositories**. The React frontend is served alongside the API.
 
 The API exposes:
 
@@ -54,7 +54,7 @@ GET /api/analyse
 /api/analyse?owner=username&name=repository
 ```
 
-The application retrieves commits from the selected repository source and calculates repository statistics.
+The application retrieves all commits from the selected repository source (using pagination for GitHub) and calculates repository statistics.
 
 Currently calculated statistics include:
 
@@ -107,7 +107,7 @@ The `RepositorySourceResolver` selects the appropriate `IRepositorySource` based
 
 ## GitHub Integration
 
-GitHub repositories are currently accessed through GitHub's REST API using an injected `HttpClient`.
+GitHub repositories are accessed through GitHub's REST API using an injected `HttpClient`.
 
 The GitHub integration includes:
 
@@ -116,13 +116,13 @@ The GitHub integration includes:
 - JSON response deserialization
 - Commit mapping into the application's domain model
 - Cancellation support
+- Pagination through all commit pages
+- Optional token authentication, configured with the `GitHub:Token` setting (for example, the `GitHub__Token` environment variable)
 - Handling of missing repositories
-- Handling of GitHub API failures
+- Handling of GitHub API failures and rate limits
 - Appropriate API error responses
 
-GitHub API failures are distinguished from invalid repositories so that an external GitHub failure can be returned as a `502 Bad Gateway` rather than being presented as an internal application error.
-
-Pagination, authentication, rate-limit handling, and additional GitHub metadata are intentionally left for later iterations.
+GitHub API failures are distinguished from invalid repositories. General upstream API failures return `502 Bad Gateway`; detected primary rate limits return `429 Too Many Requests` and include a `Retry-After` header when GitHub provides a reset time. Without a token, requests use GitHub's unauthenticated rate limit.
 
 ## Testing
 
@@ -146,7 +146,7 @@ Tests currently cover areas including:
 
 External HTTP calls are isolated from unit tests using fake HTTP handlers, allowing success and failure scenarios to be tested deterministically without depending on the availability of GitHub.
 
-The current test suite contains **34 passing tests**.
+The test suite includes unit and integration tests and runs in the GitHub Actions build workflow.
 
 ## Development Approach
 
@@ -221,9 +221,7 @@ Future analysis features may include:
 
 Planned improvements include:
 
-- Pagination
-- Authentication
-- Rate-limit handling
+- More comprehensive handling of secondary and other GitHub rate limits
 - Additional GitHub repository metadata
 - More comprehensive GitHub API error handling
 
@@ -244,10 +242,6 @@ Testing will continue to evolve alongside the application, with an emphasis on:
 - Testing observable behaviour rather than implementation details
 - Maintaining a fast and reliable test suite
 
-### Deployment
-
-A future goal is to deploy the application to **Render** from GitHub and make the API available as a hosted application.
-
 ## Learning Objectives
 
 By the end of the project, I want to be able to demonstrate practical experience with:
@@ -261,6 +255,6 @@ By the end of the project, I want to be able to demonstrate practical experience
 - Writing meaningful unit and integration tests
 - Applying TDD to feature development
 - Making architectural decisions based on evolving requirements
-- Deploying and operating a .NET application
+- Containerising and deploying a .NET application
 
 The GitDashboard application is the vehicle for that learning; the broader objective is to develop a stronger understanding of **professional backend development and test-driven engineering practices**.
