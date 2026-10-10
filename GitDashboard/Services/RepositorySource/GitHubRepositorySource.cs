@@ -1,5 +1,4 @@
 using System.Net;
-using System.Windows.Markup;
 using GitDashboard.Exceptions;
 using GitDashboard.Models;
 
@@ -56,7 +55,7 @@ public class GitHubRepositorySource : IRepositorySource
                     resetsAt = DateTimeOffset.FromUnixTimeSeconds(resetTimeStamp);
                 }
                     
-                throw new GitHubRateLimitException("GitHub API rate limit reached");
+                throw new GitHubRateLimitException("GitHub API rate limit reached", resetsAt);
             }
 
             response.EnsureSuccessStatusCode();
