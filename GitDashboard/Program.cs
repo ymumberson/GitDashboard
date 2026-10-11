@@ -4,6 +4,9 @@ using GitDashboard.Configuration;
 using GitDashboard.Models;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Security.Cryptography;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -102,6 +105,65 @@ app.MapGet("api/analyse", async (
    }
    
    return Results.Ok(await service.AnalyseAsync(repository, cancellationToken));
+});
+
+app.MapGet("api/auth/github/login", (
+   HttpContext context,
+   IOptions<GitHubAppOptions> options
+) =>
+{
+   var settings = options.Value;
+
+   // This unique state value is used to prevent CSRF attacks.
+   var state = WebEncoders.Base64UrlEncode(
+      RandomNumberGenerator.GetBytes(32)
+   );
+
+   // This is the PKCE verifier and its S256 challenge.
+   var codeVerifier = WebEncoders.Base64UrlEncode(
+      RandomNumberGenerator.GetBytes(32)
+   );
+   var codeChallenge = WebEncoders.Base64UrlEncode(
+      SHA256.HashData(Encoding.ASCII.GetBytes(codeVerifier))
+   );
+
+   var cookieOptions = new CookieOptions
+   {
+      HttpOnly = true,
+      Secure = context.Request.IsHttps,
+      SameSite = SameSiteMode.Lax,
+      MaxAge = TimeSpan.FromMinutes(10),
+      IsEssential = true,
+      Path = "/api/auth/github/callback"
+   };
+
+   // Keep state and verifier server-inaccessible to JavaScript.
+   context.Response.Cookies.Append(
+      "github_oauth_state",
+      state,
+      cookieOptions
+   );
+   context.Response.Cookies.Append(
+      "github_oauth_verifier",
+      codeVerifier,
+      cookieOptions
+   );
+
+   var parameters = new Dictionary<string, string?>
+   {
+      ["client_id"] = settings.ClientId,
+      ["redirect_uri"] = settings.CallbackUrl,
+      ["state"] = state,
+      ["code_challenge"] = codeChallenge,
+      ["code_challenge_method"] = "S256"
+   };
+
+   var authorizationUrl = QueryHelpers.AddQueryString(
+      "https://github.com/login/oauth/authorize",
+      parameters
+   );
+
+   return Results.Redirect(authorizationUrl);
 });
 
 app.Run();
