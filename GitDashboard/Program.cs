@@ -21,7 +21,12 @@ builder.Services.AddOptions<GitHubAppOptions>()
    .Validate(options =>
       !string.IsNullOrWhiteSpace(options.ClientId) &&
       !string.IsNullOrWhiteSpace(options.ClientSecret) &&
-      !string.IsNullOrWhiteSpace(options.CallbackUrl),
+      Uri.TryCreate(
+                options.CallbackUrl,
+                UriKind.Absolute,
+                out var callbackUri) &&
+            (callbackUri.Scheme == Uri.UriSchemeHttps ||
+             callbackUri.IsLoopback),
       "GitHub App configuration is incomplete.")
    .ValidateOnStart();
 
