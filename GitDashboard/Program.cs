@@ -16,6 +16,14 @@ builder.Services
 builder.Services
     .AddOptions<GitHubOptions>()
     .Bind(builder.Configuration.GetSection("GitHub"));
+builder.Services.AddOptions<GitHubAppOptions>()
+   .Bind(builder.Configuration.GetSection("GitHubApp"))
+   .Validate(options =>
+      !string.IsNullOrWhiteSpace(options.ClientId) &&
+      !string.IsNullOrWhiteSpace(options.ClientSecret) &&
+      !string.IsNullOrWhiteSpace(options.CallbackUrl),
+      "GitHub App configuration is incomplete.")
+   .ValidateOnStart();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<InvalidRepositoryExceptionHandler>();
